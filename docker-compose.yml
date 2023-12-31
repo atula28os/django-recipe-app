@@ -1,6 +1,30 @@
 version: '3.9'
 
 services:
+  db:
+    image: postgres:13-alpine
+    ports:
+      - "5432:5432"
+    volumes:
+      - dev-db-data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_DB=devdb
+      - POSTGRES_USER=devuser
+      - POSTGRES_PASSWORD=college
+
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: pgadmin2
+    depends_on:
+      - db
+    ports:
+      - 5051:80
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=admin@pgadmin.com 
+      - PGADMIN_DEFAULT_PASSWORD=admin
+    volumes:
+      - pgadmin:/var/lib/pgadmin
+      
   app:
     build: 
       context: .
@@ -12,3 +36,15 @@ services:
       - ./app:/app
     command: >
       sh -c "python manage.py runserver 0.0.0.0:8000"
+    environment:
+      - DB_HOST=db
+      - DB_NAME=devdb
+      - DB_USER=devuser
+      - DB_PASSWORD=college
+    depends_on:
+      - db
+
+volumes:
+  dev-db-data:
+  dev-static-data:
+  pgadmin:
